@@ -19,7 +19,10 @@ class FishSprite : public Sprite
     float _prevAngle = 0.0f;
     bool shouldFire = false;
     Vec2 _target;
-    
+    const float _oneTickAngle = 5.0f;
+    bool isRotating = false;
+    float _currentAngle = 0.0f;
+    Vec2 convertAngleToVec(float angle);
 public:
     static FishSprite* createSprite();
     virtual bool init();

@@ -30,13 +30,13 @@ bool GameScene::init()
     
     initListeners();
     initUI();
-
+    
     heroFish = FishSprite::createSprite();
     heroFish->setPosition(Vec2(winSize.width * 0.5f, winSize.height *0.5f));
     this->addChild(heroFish);
     
     initEnemies(getRandom(3, 10));
-
+    
     return true;
 }
 void GameScene::initEnemies(int count){
@@ -107,6 +107,10 @@ void GameScene::initUI(){
     background->setScale(MAX(winSize.width / background->getContentSize().width,
                              winSize.height / background->getContentSize().height));
     this->addChild(background);
+    
+    ParticleSystemQuad *bulbParticle = ParticleSystemQuad::create("particle_texture.plist");
+    bulbParticle->setPosition(Vec2(winSize.width / 2, 0));
+    this->addChild(bulbParticle);
     
     auto menuButton = Button::create();
     menuButton->setTitleLabel(Label::createWithTTF("Menu", "fonts/Marker Felt.ttf", 30));

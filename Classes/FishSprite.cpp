@@ -20,7 +20,7 @@ bool FishSprite::init()
     setTexture("fish.png");
     setScale(0.35f);
     
-    PhysicsBody *body = PhysicsBody::createBox(getContentSize());
+    PhysicsBody *body = PhysicsBody::createCircle(getContentSize().width*0.35f);
     body->setGravityEnable(false);
     body->setRotationEnable(true);
     body->setCategoryBitmask(HERO);
@@ -36,20 +36,35 @@ void FishSprite::rotateTo( Vec2 target ){
     getPhysicsBody()->setAngularVelocityLimit(5.0f);
     auto diff = getPosition() - target;
     auto angle = CC_RADIANS_TO_DEGREES(atan2(diff.x, diff.y));
-    setRotation( getRotation() + (angle - _prevAngle));
     _target = target;
     _prevAngle = angle;
-}
-
-void FishSprite::setFire(bool fire){
-    unscheduleAllCallbacks();
-    shouldFire = fire;
-    if(shouldFire){
-        schedule(schedule_selector(FishSprite::tick), 0.2f);
-        tick(0);
+    if (!isRotating) {
+        schedule(schedule_selector(FishSprite::rotateTick), 0.02f);
+        isRotating = true;
     }
 }
 
+void FishSprite::setFire(bool fire){
+    unschedule(schedule_selector(FishSprite::tick));
+    shouldFire = fire;
+    if(shouldFire){
+        schedule(schedule_selector(FishSprite::tick), 0.25f);
+    }
+}
+void FishSprite::rotateTick(float dt) {
+    if (_currentAngle - _prevAngle > 3 * _oneTickAngle) {
+        _currentAngle -= _oneTickAngle;
+        setRotation(_currentAngle);
+    } else if (_currentAngle - _prevAngle < -3 * _oneTickAngle){
+        _currentAngle += _oneTickAngle;
+        setRotation(_currentAngle);
+    } else {
+        unschedule(schedule_selector(FishSprite::rotateTick));
+        isRotating = false;
+        if( !isScheduled(schedule_selector(FishSprite::tick)) )
+            getParent()->addChild(makeBubble(_target));
+    }
+}
 void FishSprite::tick(float dt){
     if (shouldFire) {
         getParent()->addChild(makeBubble(_target));
@@ -63,7 +78,7 @@ Sprite* FishSprite::makeBubble( Vec2 target ){
     bubble->setOpacity(0.0f);
     bubble->runAction(FadeIn::create(0.5f));
     
-    PhysicsBody *body = PhysicsBody::createBox(bubble->getContentSize());
+    PhysicsBody *body = PhysicsBody::createCircle(bubble->getContentSize().width/2);
     body->setGravityEnable(false);
     body->setRotationEnable(true);
     body->setCategoryBitmask(BUBBLE);
@@ -71,8 +86,10 @@ Sprite* FishSprite::makeBubble( Vec2 target ){
     body->setContactTestBitmask(ENEMY);
     bubble->setPhysicsBody(body);
 
+    auto winSize = Director::getInstance()->getWinSize();
+
     Vec2 impulseVec = target - getPosition();
-    body->applyImpulse( impulseVec * (1000 - impulseVec.length()));
+    body->applyImpulse(convertAngleToVec(_currentAngle-180)*500);
     
     runAction(Sequence::create(CallFunc::create([this]() { this->setTexture( "fishBubble.png"); }),
                                DelayTime::create(0.7f),
@@ -81,3 +98,11 @@ Sprite* FishSprite::makeBubble( Vec2 target ){
     return bubble;    
 }
 
+Vec2 FishSprite::convertAngleToVec(float angle)
+{
+    float halfOfScreen = Director::getInstance()->getWinSize().width/2;
+    Vec2 result;
+    float radAngle = CC_DEGREES_TO_RADIANS(angle);
+    result = Vec2(halfOfScreen * sinf(radAngle), halfOfScreen * cosf(radAngle));
+    return result;
+}

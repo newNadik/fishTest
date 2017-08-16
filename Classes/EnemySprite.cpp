@@ -20,7 +20,7 @@ bool EnemySprite::init()
     setTexture("badFish.png");
     setScale(0.35f);
     
-    PhysicsBody *body = PhysicsBody::createBox(getContentSize());
+    PhysicsBody *body = PhysicsBody::createCircle(getContentSize().width*0.35f);
     body->setGravityEnable(false);
     body->setDynamic(true);
     body->setRotationEnable(true);
@@ -32,11 +32,9 @@ bool EnemySprite::init()
     return true;
 }
 void EnemySprite::moveTo(Vec2 target){    
-    auto diff = getPosition() - target;
-    auto angle = CC_RADIANS_TO_DEGREES(atan2(diff.x, diff.y));
-    unscheduleUpdate();
-    scheduleUpdate();
-    setRotation( getRotation() + angle );
+
+    setRotation( -CC_RADIANS_TO_DEGREES((getPosition() - target).getAngle())+90);
+
     getPhysicsBody()->applyImpulse((target - getPosition())*400);
     
     RotateBy *rotate1 = RotateBy::create(1.0f, 5);
