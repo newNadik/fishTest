@@ -33,7 +33,7 @@ bool GameScene::init()
 
     heroFish = FishSprite::createSprite();
     heroFish->setPosition(Vec2(winSize.width * 0.5f, winSize.height *0.5f));
-    this->addChild(heroFish, 5);
+    this->addChild(heroFish);
     
     initEnemies(getRandom(3, 10));
 
@@ -49,7 +49,7 @@ void GameScene::initEnemies(int count){
         
         enemy->setPosition(Vec2(winSize.width * posX, winSize.height *posY));
         enemy->moveTo(Vec2(winSize.width * 0.5f, winSize.height *0.5f));
-        this->addChild(enemy, 6);
+        this->addChild(enemy);
     }
 }
 void GameScene::initListeners(){
